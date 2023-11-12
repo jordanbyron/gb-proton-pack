@@ -3,6 +3,8 @@
 Yet another Arduino based Proton Pack project. This variant uses state machines to simplify run loops and make it much
 easier to understand state transition and functionality. Heavily inspired by and using code snippets from both [CountDeMonet](https://github.com/CountDeMonet/ArduinoProtonPack) and [arpehem](https://github.com/arpehem/Arpehem-s-proton-pack-code)'s projects.
 
+[![Video](https://github.com/jordanbyron/gb-proton-pack/blob/44bb471bfce5b1785e75b84f9d0df2ed49319ace/media/pack.jpg)](https://youtu.be/ZlHGk2GJUO0)
+
 ## Wiring
 
 This setup requires two Arduinos: One inside the main pack and the other inside the neutrona wand. They'll communicate
