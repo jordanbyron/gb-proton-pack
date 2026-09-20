@@ -485,12 +485,6 @@ void playSfx(int trackNumber) {
   previousPlayMillis = currentMillis;
 }
 
-void loopSfx(int trackNumber) {
-  if (musicPlaying) return;
-
-  sfx.loop(trackNumber);
-}
-
 void playIdleTrack() {
   if (currentMillis > playIdleTrackAtMillis) {
     playSfx(2);
