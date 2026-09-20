@@ -2,6 +2,7 @@
 #define Lights_h
 #include "Arduino.h"
 #include <Adafruit_NeoPixel.h>
+#include <FireTimer.h>
 class Lights {
 public:
   Lights(int16_t pin);
@@ -15,5 +16,9 @@ private:
   Adafruit_NeoPixel *_lights;
   int _pin;
   int _numberOfPixels;
+  FireTimer _blinkTimer;
+  bool _bootBlink = false;
+  FireTimer _arcoelectricBlinkTimer;
+  bool _arcoelectricBlink = false;
 };
 #endif

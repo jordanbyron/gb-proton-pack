@@ -24,21 +24,18 @@ void Lights::setup() {
 }
 
 const unsigned long bootBlinkInterval = 750;  // interval at which to cycle lights (milliseconds).
-bool bootBlink = false;
-
-FireTimer blinkTimer;
 
 void Lights::boot(bool init) {
   if (init) {
-    blinkTimer.begin(bootBlinkInterval);
-    bootBlink = false;
+    this->_blinkTimer.begin(bootBlinkInterval);
+    this->_bootBlink = false;
     this->clear(false);
   }
 
-  if (blinkTimer.fire() || init) {
-    bootBlink = !bootBlink;
+  if (this->_blinkTimer.fire() || init) {
+    this->_bootBlink = !this->_bootBlink;
 
-    if (bootBlink) {
+    if (this->_bootBlink) {
       this->_lights->setPixelColor(slowbloLight, this->_lights->Color(255, 0, 0));
     } else {
       this->_lights->setPixelColor(slowbloLight, this->_lights->Color(0, 0, 0));
@@ -63,14 +60,14 @@ void Lights::activated(bool init) {
     this->_lights->setPixelColor(ventLight, this->_lights->Color(255, 255, 255));  // Vent lights on steady
     this->_lights->show();
 
-    blinkTimer.begin(bootBlinkInterval);
-    bootBlink = false;
+    this->_blinkTimer.begin(bootBlinkInterval);
+    this->_bootBlink = false;
   }
 
-  if (blinkTimer.fire() || init) {
-    bootBlink = !bootBlink;
+  if (this->_blinkTimer.fire() || init) {
+    this->_bootBlink = !this->_bootBlink;
 
-    if (bootBlink) {
+    if (this->_bootBlink) {
       this->_lights->setPixelColor(frontHatLight, this->_lights->Color(255, 255, 255));
       this->_lights->setPixelColor(topHatLight, this->_lights->Color(0, 0, 0));
     } else {
@@ -83,8 +80,6 @@ void Lights::activated(bool init) {
 }
 
 int overloadInterval = 200;
-FireTimer arcoelectricBlinkTimer;
-bool arcoelectricBlink = false;
 
 void Lights::overload(bool init) {
   if (init) {
@@ -92,16 +87,16 @@ void Lights::overload(bool init) {
     this->_lights->setPixelColor(ventLight, this->_lights->Color(255, 255, 255));  // Vent lights on steady
     this->_lights->show();
 
-    blinkTimer.begin(overloadInterval);
-    arcoelectricBlinkTimer.begin(100);
-    bootBlink = false;
-    arcoelectricBlink = false;
+    this->_blinkTimer.begin(overloadInterval);
+    this->_arcoelectricBlinkTimer.begin(100);
+    this->_bootBlink = false;
+    this->_arcoelectricBlink = false;
   }
 
-  if (arcoelectricBlinkTimer.fire()) {
-    arcoelectricBlink = !arcoelectricBlink;
+  if (this->_arcoelectricBlinkTimer.fire()) {
+    this->_arcoelectricBlink = !this->_arcoelectricBlink;
 
-    if (arcoelectricBlink) {
+    if (this->_arcoelectricBlink) {
       this->_lights->setPixelColor(topArcoelectricLight, this->_lights->Color(255, 255, 255));
     } else {
       this->_lights->setPixelColor(topArcoelectricLight, this->_lights->Color(0, 0, 0));
@@ -110,10 +105,10 @@ void Lights::overload(bool init) {
     this->_lights->show();
   }
 
-  if (blinkTimer.fire() || init) {
-    bootBlink = !bootBlink;
+  if (this->_blinkTimer.fire() || init) {
+    this->_bootBlink = !this->_bootBlink;
 
-    if (bootBlink) {
+    if (this->_bootBlink) {
       this->_lights->setPixelColor(frontHatLight, this->_lights->Color(255, 255, 255));
       this->_lights->setPixelColor(topHatLight, this->_lights->Color(0, 0, 0));
       this->_lights->setPixelColor(slowbloLight, this->_lights->Color(255, 0, 0));
