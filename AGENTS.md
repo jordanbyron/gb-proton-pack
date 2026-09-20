@@ -4,11 +4,11 @@ Two Arduino sketches, `MainPack/` and `NeutrinoWand/`, one per board. There is n
 
 ## Compile check
 
-Both boards are Arduino Nanos. `Libraries/` holds the vendored HT16K33 driver; every other library comes from the standard Arduino libraries folder.
+Both boards are Arduino Unos. `Libraries/` holds the vendored HT16K33 driver; every other library comes from the standard Arduino libraries folder.
 
 ```sh
-arduino-cli compile --fqbn arduino:avr:nano --libraries Libraries --warnings all MainPack
-arduino-cli compile --fqbn arduino:avr:nano --libraries Libraries --warnings all NeutrinoWand
+arduino-cli compile --fqbn arduino:avr:uno --libraries Libraries --warnings all MainPack
+arduino-cli compile --fqbn arduino:avr:uno --libraries Libraries --warnings all NeutrinoWand
 ```
 
 Each build ends with two lines, `Sketch uses N bytes` and `Global variables use N bytes`. Record both for each sketch on the base commit, then again after the change. Only warnings whose path is inside `MainPack/` or `NeutrinoWand/` matter; the AVR core emits its own.
