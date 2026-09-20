@@ -18,14 +18,12 @@ public:
   void boot(bool startAnimation = false);
   void cycle(bool startAnimation = false);
   void fire(bool startAnimation = false);
-  void overload(bool startAnimation = false);
   void vent(bool startAnimation = false);
   void shutdown(bool startAnimation = false);
 
 private:
   void write();
   void setSegment(uint8_t segmentNumber, uint8_t value);
-  void _cycleBootStep(int boot);
   void _resetCycleAnimation();
   void _resetShutdownAnimation();
   void _resetFireAnimation();
