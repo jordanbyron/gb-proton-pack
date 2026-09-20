@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "VolumeControl.h"
 
-VolumeControl::VolumeControl(uint16_t dt, uint16_t clock, int currentVolume = 20, int maxVolume = 28, int minVolume = 0) {
+VolumeControl::VolumeControl(uint16_t dt, uint16_t clock, int currentVolume, int maxVolume, int minVolume) {
   this->_dtPin = dt;
   this->_clockPin = clock;
   this->_maxVolume = maxVolume;

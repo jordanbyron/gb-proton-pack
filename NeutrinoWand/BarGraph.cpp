@@ -7,7 +7,7 @@ HT16K33 matrix = HT16K33();
 bool isDisplayingVolume = false;
 FireTimer volumeDisplayTimer;
 
-BarGraph::BarGraph(uint8_t address = 0x70, uint8_t numberOfSegments = 28) {
+BarGraph::BarGraph(uint8_t address, uint8_t numberOfSegments) {
   this->_address = address;
   this->_numberOfSegments = numberOfSegments;
 }
@@ -25,7 +25,7 @@ void BarGraph::run() {
   }
 }
 
-void BarGraph::clear(bool writeChanges = true) {
+void BarGraph::clear(bool writeChanges) {
   matrix.clear();
   if (writeChanges) matrix.write();
 }
@@ -61,7 +61,7 @@ void BarGraph::setSegment(uint8_t segmentNumber, uint8_t value) {
 FireTimer bootAnimationTimer;
 int bootAnimationKeyframe = 0;
 
-void BarGraph::boot(bool startAnimation = false) {
+void BarGraph::boot(bool startAnimation) {
   if (isDisplayingVolume) { return; }
 
   if (startAnimation) {
@@ -101,7 +101,7 @@ void resetCycleAnimation() {
   cycleAnimationDirectionForward = true;
 }
 
-void BarGraph::cycle(bool startAnimation = false) {
+void BarGraph::cycle(bool startAnimation) {
   if (isDisplayingVolume) { return; }
 
   if (startAnimation || cycleAnimationTimer.fire()) {
@@ -141,7 +141,7 @@ void resetShutdownAnimation() {
   shutdownAnimationComplete = false;
 }
 
-void BarGraph::shutdown(bool startAnimation = false) {
+void BarGraph::shutdown(bool startAnimation) {
   if (isDisplayingVolume) { return; }
 
   if (startAnimation || (!shutdownAnimationComplete && shutdownAnimationTimer.fire())) {
@@ -185,7 +185,7 @@ void resetFireAnimation() {
   fireAnimationDirectionForward = true;
 }
 
-void BarGraph::fire(bool startAnimation = false) {
+void BarGraph::fire(bool startAnimation) {
   if (isDisplayingVolume) { return; }
 
   if (startAnimation || fireAnimationTimer.fire()) {
@@ -228,7 +228,7 @@ void resetVentAnimation() {
   ventAnimationAlternate = true;
 }
 
-void BarGraph::vent(bool startAnimation = false) {
+void BarGraph::vent(bool startAnimation) {
   if (isDisplayingVolume) { return; }
 
   if (startAnimation || ventAnimationTimer.fire()) {
