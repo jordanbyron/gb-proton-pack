@@ -127,7 +127,7 @@ void Lights::overload(bool init) {
   }
 }
 
-void Lights::clear(bool update = true) {
+void Lights::clear(bool update) {
   this->_lights->clear();
   this->_lights->setBrightness(100);
   if (update) { this->_lights->show(); }
