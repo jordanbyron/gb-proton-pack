@@ -1,5 +1,5 @@
-#ifndef Cyclotron_h
-#define Cyclotron_h
+#ifndef Lights_h
+#define Lights_h
 #include "Arduino.h"
 #include <Adafruit_NeoPixel.h>
 class Lights {
@@ -11,8 +11,6 @@ public:
   void locked(bool init);
   void activated(bool init);
   void overload(bool init);
-  void vent(unsigned long currentMillis);
-  void off(unsigned long currentMillis);
 private:
   Adafruit_NeoPixel *_lights;
   int _pin;
