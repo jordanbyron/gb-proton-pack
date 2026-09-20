@@ -19,7 +19,6 @@ private:
   uint16_t _countLedsPerCyclotron;
   uint16_t _ventStart;
   uint16_t _ventEnd;
-  uint16_t _countVentLeds;
   void _setCyclotronLightState(int startLed, int endLed, int state);
 };
 #endif
