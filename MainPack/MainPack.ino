@@ -82,6 +82,7 @@ const char MESSAGE_PLAY_PAUSE = 'M';
 const char MESSAGE_PLAY_NEXT = 'm';
 
 const char MESSAGE_PING = 'p';
+const char MESSAGE_NONE = 0;
 
 // ======= Wand Connectivity =======
 
@@ -179,7 +180,7 @@ void loop() {
 
   updateSmoke();
 
-  //lastMessage = ""; // Clear last message
+  //lastMessage = MESSAGE_NONE; // Clear last message
 
   delay(STATE_DELAY);
 }
@@ -244,7 +245,7 @@ void debugButtonPressed(BfButton* btn, BfButton::press_pattern_t pattern) {
 }
 
 void exitDebugMode() {
-  lastMessage = "";
+  lastMessage = MESSAGE_NONE;
   machine.transitionTo(OFF);
   debugIndex = 0;
 }
@@ -431,7 +432,7 @@ bool offAfterPowerDown() {
 
 void sfxMode() {
   if (audioMachine.executeOnce) {
-    lastMessage = "";
+    lastMessage = MESSAGE_NONE;
     musicPlaying = false;
     if (audioPlaying()) sfx.stop();
   }
@@ -439,7 +440,7 @@ void sfxMode() {
 
 void musicMode() {
   if (audioMachine.executeOnce) {
-    lastMessage = "";
+    lastMessage = MESSAGE_NONE;
     musicPlaying = true;
     sfx.repeatFolder(1);
   }
@@ -459,7 +460,7 @@ bool nextSong() {
   bool transition = musicPlaying && lastMessage == MESSAGE_PLAY_NEXT;
 
   if (transition) {
-    lastMessage = "";
+    lastMessage = MESSAGE_NONE;
     sfx.playNext();
   }
   return transition;
