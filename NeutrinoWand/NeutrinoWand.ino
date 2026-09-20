@@ -22,12 +22,6 @@ bool isOverloading = false;
 bool isPoweredDown = false;
 bool isVented = false;
 
-enum packMode {
-  normal,
-  volume,
-  music
-} packMode;
-
 const int PIXEL_PIN = 6;
 Lights lights(PIXEL_PIN);
 
@@ -39,14 +33,6 @@ Adafruit_NeoPixel noseJewel(NOSE_JEWEL_COUNT, NOSE_JEWEL_PIN);
 const uint8_t BARGRAPH_SIZE = 28;
 
 BarGraph barGraph(0x70, BARGRAPH_SIZE);
-
-// **** Different Bargraph sequence modes **** //
-enum barGraphSequences { BG_START,
-                         BG_ACTIVE,
-                         BG_FIRE1,
-                         BG_FIRE2,
-                         BG_VENT };
-barGraphSequences BG_MODES;
 
 // Switches & Buttons
 const int STARTUP_SWITCH = 2;
@@ -165,14 +151,12 @@ void off() {
 }
 
 int bootDelay = 3700;
-int bootStart;
 
 FireTimer bootTimer;
 
 void booting() {
   if (machine.executeOnce) {
     Serial.write(MESSAGE_BOOT);
-    bootStart = millis();
     bootTimer.begin(bootDelay);
   }
 
