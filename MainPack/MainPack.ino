@@ -14,13 +14,19 @@ const int NEOPIXEL_POWER_CELL_COUNT = 15;
 PowerCell powerCell = PowerCell::PowerCell(NEOPIXEL_POWER_CELL_COUNT, NEOPIXEL_POWER_CELL_PIN);
 
 const int NEOPIXEL_CYCLOTRON_PIN = 6;
-Cyclotron cyclotronAndVent = Cyclotron::Cyclotron(NEOPIXEL_CYCLOTRON_PIN, 0, 1, 4, 8);
+Cyclotron cyclotronAndVent = Cyclotron::Cyclotron(NEOPIXEL_CYCLOTRON_PIN, 0, 7, 99, 8);
 
 // Smoke pins
 const int SMOKE = 4;
 const int FAN = 5;
 const int smokeDelay = 5000;  // Half of *overloadDelay* in Wand config
+
+const int SMOKE_DURATION = 5000; // ms the vape pen can run before needing a cooldown
+const int SMOKE_COOLDOWN = 1000; // ms to let the vape pen cool down
 FireTimer smokeFireTimer;
+FireTimer smokeCycleTimer;   // toggles the pen between run / cooldown while smoke is active
+bool smokeActive = false;    // smoke effect requested
+bool smokeRunning = false;   // pen motor currently on (vs. cooling down)
 
 // Soundboard pins and setup
 const int SFX_RX = 8;
@@ -170,6 +176,8 @@ void loop() {
 
   audioMachine.run();
   machine.run();
+
+  updateSmoke();
 
   //lastMessage = ""; // Clear last message
 
@@ -509,7 +517,25 @@ void volumeChanged(int volume) {
 }
 
 void setSmoke(bool smokeOn) {
+  if (smokeOn == smokeActive) return;  // already in the requested state, keep the cycle going
+
+  smokeActive = smokeOn;
+  smokeRunning = smokeOn;
   digitalWrite(SMOKE, smokeOn ? HIGH : LOW);
+
+  if (smokeOn) smokeCycleTimer.begin(SMOKE_DURATION);
+}
+
+// While smoke is active, alternate the pen between SMOKE_DURATION on and
+// SMOKE_COOLDOWN off so we never trip the pen's built-in cooldown.
+void updateSmoke() {
+  if (!smokeActive) return;
+
+  if (smokeCycleTimer.fire(false)) {
+    smokeRunning = !smokeRunning;
+    digitalWrite(SMOKE, smokeRunning ? HIGH : LOW);
+    smokeCycleTimer.begin(smokeRunning ? SMOKE_DURATION : SMOKE_COOLDOWN);
+  }
 }
 
 void setFan(bool fanOn) {
