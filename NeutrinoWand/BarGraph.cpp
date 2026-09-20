@@ -3,36 +3,32 @@
 #include <HT16K33.h>
 #include <FireTimer.h>
 
-HT16K33 matrix = HT16K33();
-bool isDisplayingVolume = false;
-FireTimer volumeDisplayTimer;
-
 BarGraph::BarGraph(uint8_t address, uint8_t numberOfSegments) {
   this->_address = address;
   this->_numberOfSegments = numberOfSegments;
 }
 
 void BarGraph::setup() {
-  matrix.init(this->_address);
+  this->_matrix.init(this->_address);
   delay(1000);
-  matrix.setBrightness(10);
+  this->_matrix.setBrightness(10);
 }
 
 void BarGraph::run() {
-  if (isDisplayingVolume && volumeDisplayTimer.fire(false)) {
-    isDisplayingVolume = false;
+  if (this->_isDisplayingVolume && this->_volumeDisplayTimer.fire(false)) {
+    this->_isDisplayingVolume = false;
     this->clear();
   }
 }
 
 void BarGraph::clear(bool writeChanges) {
-  matrix.clear();
-  if (writeChanges) matrix.write();
+  this->_matrix.clear();
+  if (writeChanges) this->_matrix.write();
 }
 
 void BarGraph::volumeChanged(int volume) {
-  isDisplayingVolume = true;
-  volumeDisplayTimer.begin(2000);
+  this->_isDisplayingVolume = true;
+  this->_volumeDisplayTimer.begin(2000);
 
   for (int i = 1; i <= this->_numberOfSegments; i++) {
     this->setSegment(i - 1, volume >= i ? 1 : 0);
@@ -41,7 +37,7 @@ void BarGraph::volumeChanged(int volume) {
 }
 
 void BarGraph::write() {
-  matrix.write();
+  this->_matrix.write();
 }
 
 void BarGraph::setSegment(uint8_t segmentNumber, uint8_t value) {
@@ -55,188 +51,170 @@ void BarGraph::setSegment(uint8_t segmentNumber, uint8_t value) {
   row = segmentNumber / 4;
   column = segmentNumber % 4;
 
-  matrix.setPixel(row, column, value);
+  this->_matrix.setPixel(row, column, value);
 }
 
-FireTimer bootAnimationTimer;
-int bootAnimationKeyframe = 0;
-
 void BarGraph::boot(bool startAnimation) {
-  if (isDisplayingVolume) { return; }
+  if (this->_isDisplayingVolume) { return; }
 
   if (startAnimation) {
-    bootAnimationTimer.begin(110);
-    bootAnimationTimer.start();  // Force reset of timer
-    bootAnimationKeyframe = 0;
+    this->_bootAnimationTimer.begin(110);
+    this->_bootAnimationTimer.start();  // Force reset of timer
+    this->_bootAnimationKeyframe = 0;
   }
 
-  if (startAnimation || bootAnimationTimer.fire()) {
-    if (bootAnimationKeyframe < 28) {
+  if (startAnimation || this->_bootAnimationTimer.fire()) {
+    if (this->_bootAnimationKeyframe < 28) {
       for (int i = 27; i >= 0; i--) {
-        this->setSegment(i, (i >= (27 - bootAnimationKeyframe)));
+        this->setSegment(i, (i >= (27 - this->_bootAnimationKeyframe)));
       }
     } else {
       for (int i = 27; i >= 0; i--) {
-        this->setSegment(i, (i < (27 - (bootAnimationKeyframe - 28))));
+        this->setSegment(i, (i < (27 - (this->_bootAnimationKeyframe - 28))));
       }
     }
     this->write();
-    if (bootAnimationKeyframe >= 28) {
-      bootAnimationTimer.update(20);
-    } else if (bootAnimationKeyframe == 56) {
-      bootAnimationTimer.reset();
-      bootAnimationKeyframe = 0;
+    if (this->_bootAnimationKeyframe >= 28) {
+      this->_bootAnimationTimer.update(20);
+    } else if (this->_bootAnimationKeyframe == 56) {
+      this->_bootAnimationTimer.reset();
+      this->_bootAnimationKeyframe = 0;
     }
-    bootAnimationKeyframe++;
+    this->_bootAnimationKeyframe++;
   }
 }
 
-FireTimer cycleAnimationTimer;
-int cycleAnimationKeyframe = 0;
-bool cycleAnimationDirectionForward = true;
-
-void resetCycleAnimation() {
-  cycleAnimationTimer.begin(20);
-  cycleAnimationKeyframe = 0;
-  cycleAnimationDirectionForward = true;
+void BarGraph::_resetCycleAnimation() {
+  this->_cycleAnimationTimer.begin(20);
+  this->_cycleAnimationKeyframe = 0;
+  this->_cycleAnimationDirectionForward = true;
 }
 
 void BarGraph::cycle(bool startAnimation) {
-  if (isDisplayingVolume) { return; }
+  if (this->_isDisplayingVolume) { return; }
 
-  if (startAnimation || cycleAnimationTimer.fire()) {
-    if (cycleAnimationTimer.timeDiff >= 100) {
-      resetCycleAnimation();
+  if (startAnimation || this->_cycleAnimationTimer.fire()) {
+    if (this->_cycleAnimationTimer.timeDiff >= 100) {
+      this->_resetCycleAnimation();
       return;
     }
 
     for (int i = 0; i < 28; i++) {
-      this->setSegment(i, i <= cycleAnimationKeyframe);
+      this->setSegment(i, i <= this->_cycleAnimationKeyframe);
     }
 
     this->write();
-    if (cycleAnimationKeyframe == 27) {
-      cycleAnimationDirectionForward = false;
-    } else if (cycleAnimationKeyframe == 0) {
-      cycleAnimationDirectionForward = true;
+    if (this->_cycleAnimationKeyframe == 27) {
+      this->_cycleAnimationDirectionForward = false;
+    } else if (this->_cycleAnimationKeyframe == 0) {
+      this->_cycleAnimationDirectionForward = true;
     }
 
-    if (cycleAnimationDirectionForward) {
-      cycleAnimationKeyframe++;
+    if (this->_cycleAnimationDirectionForward) {
+      this->_cycleAnimationKeyframe++;
     } else {
-      cycleAnimationKeyframe--;
+      this->_cycleAnimationKeyframe--;
     }
   }
 }
 
-FireTimer shutdownAnimationTimer;
-int shutdownAnimationKeyframe = 0;
-bool shutdownAnimationDirectionForward = true;
-bool shutdownAnimationComplete = false;
-
-void resetShutdownAnimation() {
-  shutdownAnimationTimer.begin(10);
-  shutdownAnimationKeyframe = 0;
-  shutdownAnimationDirectionForward = true;
-  shutdownAnimationComplete = false;
+void BarGraph::_resetShutdownAnimation() {
+  this->_shutdownAnimationTimer.begin(10);
+  this->_shutdownAnimationKeyframe = 0;
+  this->_shutdownAnimationDirectionForward = true;
+  this->_shutdownAnimationComplete = false;
 }
 
 void BarGraph::shutdown(bool startAnimation) {
-  if (isDisplayingVolume) { return; }
+  if (this->_isDisplayingVolume) { return; }
 
-  if (startAnimation || (!shutdownAnimationComplete && shutdownAnimationTimer.fire())) {
-    if (shutdownAnimationTimer.timeDiff >= 100) {
-      resetShutdownAnimation();
+  if (startAnimation || (!this->_shutdownAnimationComplete && this->_shutdownAnimationTimer.fire())) {
+    if (this->_shutdownAnimationTimer.timeDiff >= 100) {
+      this->_resetShutdownAnimation();
       return;
     }
 
     for (int i = 0; i < 28; i++) {
-      this->setSegment(i, i <= shutdownAnimationKeyframe);
+      this->setSegment(i, i <= this->_shutdownAnimationKeyframe);
     }
 
     this->write();
-    if (shutdownAnimationKeyframe == 27) {
-      shutdownAnimationDirectionForward = false;
-      shutdownAnimationTimer.update(70);
-    } else if (shutdownAnimationKeyframe == -1 && shutdownAnimationDirectionForward == false) {
-      shutdownAnimationComplete = true;
+    if (this->_shutdownAnimationKeyframe == 27) {
+      this->_shutdownAnimationDirectionForward = false;
+      this->_shutdownAnimationTimer.update(70);
+    } else if (this->_shutdownAnimationKeyframe == -1 && this->_shutdownAnimationDirectionForward == false) {
+      this->_shutdownAnimationComplete = true;
       return;
     }
 
-    if (shutdownAnimationDirectionForward) {
-      shutdownAnimationKeyframe++;
+    if (this->_shutdownAnimationDirectionForward) {
+      this->_shutdownAnimationKeyframe++;
     } else {
-      shutdownAnimationKeyframe--;
+      this->_shutdownAnimationKeyframe--;
     }
   }
 }
 
-FireTimer fireAnimationTimer;
-int fireAnimationKeyframe = 0;
-int fireAnimationTimeout = 70;
-bool fireAnimationDirectionForward = true;
 const int fireAnimationTop = 14;
 const int fireAnimationBottom = 13;
 
-void resetFireAnimation() {
-  fireAnimationTimeout = 70;
-  fireAnimationTimer.begin(fireAnimationTimeout);
-  fireAnimationKeyframe = 0;
-  fireAnimationDirectionForward = true;
+void BarGraph::_resetFireAnimation() {
+  this->_fireAnimationTimeout = 70;
+  this->_fireAnimationTimer.begin(this->_fireAnimationTimeout);
+  this->_fireAnimationKeyframe = 0;
+  this->_fireAnimationDirectionForward = true;
 }
 
 void BarGraph::fire(bool startAnimation) {
-  if (isDisplayingVolume) { return; }
+  if (this->_isDisplayingVolume) { return; }
 
-  if (startAnimation || fireAnimationTimer.fire()) {
-    if (fireAnimationTimer.timeDiff >= 100) {
-      resetFireAnimation();
+  if (startAnimation || this->_fireAnimationTimer.fire()) {
+    if (this->_fireAnimationTimer.timeDiff >= 100) {
+      this->_resetFireAnimation();
       return;
     }
 
-    int topPixelOne = fireAnimationTop + fireAnimationKeyframe;
-    int topPixelTwo = fireAnimationTop + 1 + fireAnimationKeyframe;
+    int topPixelOne = fireAnimationTop + this->_fireAnimationKeyframe;
+    int topPixelTwo = fireAnimationTop + 1 + this->_fireAnimationKeyframe;
 
-    int bottomPixelOne = fireAnimationBottom - fireAnimationKeyframe;
-    int bottomPixelTwo = fireAnimationBottom - 1 - fireAnimationKeyframe;
+    int bottomPixelOne = fireAnimationBottom - this->_fireAnimationKeyframe;
+    int bottomPixelTwo = fireAnimationBottom - 1 - this->_fireAnimationKeyframe;
 
     for (int i = 0; i < 27; i++) {
       this->setSegment(i, i == topPixelOne || i == topPixelTwo || i == bottomPixelOne || i == bottomPixelTwo);
     }
 
     this->write();
-    if (fireAnimationKeyframe == 15) {
-      fireAnimationKeyframe = 0;
-      if (fireAnimationTimeout > 10) { fireAnimationTimeout -= 5; }
-      fireAnimationTimer.update(fireAnimationTimeout);
+    if (this->_fireAnimationKeyframe == 15) {
+      this->_fireAnimationKeyframe = 0;
+      if (this->_fireAnimationTimeout > 10) { this->_fireAnimationTimeout -= 5; }
+      this->_fireAnimationTimer.update(this->_fireAnimationTimeout);
     }
 
-    if (fireAnimationDirectionForward) {
-      fireAnimationKeyframe++;
+    if (this->_fireAnimationDirectionForward) {
+      this->_fireAnimationKeyframe++;
     } else {
-      fireAnimationKeyframe--;
+      this->_fireAnimationKeyframe--;
     }
   }
 }
 
-FireTimer ventAnimationTimer;
 const int ventAnimationTimeout = 500;
-bool ventAnimationAlternate = true;
 
-void resetVentAnimation() {
-  ventAnimationTimer.begin(ventAnimationTimeout);
-  ventAnimationAlternate = true;
+void BarGraph::_resetVentAnimation() {
+  this->_ventAnimationTimer.begin(ventAnimationTimeout);
+  this->_ventAnimationAlternate = true;
 }
 
 void BarGraph::vent(bool startAnimation) {
-  if (isDisplayingVolume) { return; }
+  if (this->_isDisplayingVolume) { return; }
 
-  if (startAnimation || ventAnimationTimer.fire()) {
-    if (startAnimation) { resetVentAnimation(); }
+  if (startAnimation || this->_ventAnimationTimer.fire()) {
+    if (startAnimation) { this->_resetVentAnimation(); }
 
     this->clear(false);
 
-    if (ventAnimationAlternate) {
+    if (this->_ventAnimationAlternate) {
       this->setSegment(9, 1);
       this->setSegment(10, 1);
       this->setSegment(11, 1);
@@ -252,15 +230,15 @@ void BarGraph::vent(bool startAnimation) {
       this->setSegment(16, 1);
     }
 
-    ventAnimationAlternate = !ventAnimationAlternate;
+    this->_ventAnimationAlternate = !this->_ventAnimationAlternate;
 
     this->write();
   }
 }
 
 void BarGraph::reset() {
-  resetCycleAnimation();
-  resetShutdownAnimation();
-  resetFireAnimation();
+  this->_resetCycleAnimation();
+  this->_resetShutdownAnimation();
+  this->_resetFireAnimation();
   this->clear();
 }
