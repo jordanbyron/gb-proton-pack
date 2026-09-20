@@ -56,8 +56,6 @@ void Cyclotron::boot(unsigned long currentMillis) {
   }
 }
 
-unsigned long cyc_interval = 1000;  // interval at which to cycle lights for the cyclotron.
-
 void Cyclotron::idle(unsigned long currentMillis, unsigned long cycspeed) {
   if ((unsigned long)(currentMillis - this->_prevCycMillis) >= cycspeed) {
     this->_prevCycMillis = currentMillis;
