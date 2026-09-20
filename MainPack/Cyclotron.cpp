@@ -2,16 +2,6 @@
 #include "Cyclotron.h"
 #include <Adafruit_NeoPixel.h>
 
-// These are the indexes for the led's on the chain.
-int c1Start;
-int c1End;
-int c2Start;
-int c2End;
-int c3Start;
-int c3End;
-int c4Start;
-int c4End;
-
 Cyclotron::Cyclotron(int16_t pin, uint16_t cyclotronStart, uint16_t countLedsPerCyclotron, uint16_t ventStart, uint16_t countVentLeds) {
   this->_pin = pin;
   this->_cyclotronStart = cyclotronStart;
@@ -22,14 +12,14 @@ Cyclotron::Cyclotron(int16_t pin, uint16_t cyclotronStart, uint16_t countLedsPer
 
   int cyclotronLedOffset = this->_countLedsPerCyclotron - 1;
 
-  c1Start = this->_cyclotronStart;
-  c1End = c1Start + cyclotronLedOffset;
-  c2Start = c1End + 1;
-  c2End = c2Start + cyclotronLedOffset;
-  c3Start = c2End + 1;
-  c3End = c3Start + cyclotronLedOffset;
-  c4Start = c3End + 1;
-  c4End = c4Start + cyclotronLedOffset;
+  this->_c1Start = this->_cyclotronStart;
+  this->_c1End = this->_c1Start + cyclotronLedOffset;
+  this->_c2Start = this->_c1End + 1;
+  this->_c2End = this->_c2Start + cyclotronLedOffset;
+  this->_c3Start = this->_c2End + 1;
+  this->_c3End = this->_c3Start + cyclotronLedOffset;
+  this->_c4Start = this->_c3End + 1;
+  this->_c4End = this->_c4Start + cyclotronLedOffset;
 }
 
 void Cyclotron::setup() {
@@ -40,70 +30,66 @@ void Cyclotron::setup() {
   this->_lights->show();  // Initialize all pixels to 'off'
 }
 
-unsigned long prevCycBootMillis = 0;
 const unsigned long cyc_boot_interval = 500;  // interval at which to cycle lights (milliseconds).
-bool reverseBootCyclotron = false;
 
 void Cyclotron::boot(unsigned long currentMillis) {
-  if ((unsigned long)(currentMillis - prevCycBootMillis) >= cyc_boot_interval) {
-    prevCycBootMillis = currentMillis;
+  if ((unsigned long)(currentMillis - this->_prevCycBootMillis) >= cyc_boot_interval) {
+    this->_prevCycBootMillis = currentMillis;
 
-    if (reverseBootCyclotron == false) {
-      _setCyclotronLightState(c1Start, c1End, 1);
-      _setCyclotronLightState(c2Start, c2End, 2);
-      _setCyclotronLightState(c3Start, c3End, 1);
-      _setCyclotronLightState(c4Start, c4End, 2);
+    if (this->_reverseBootCyclotron == false) {
+      _setCyclotronLightState(this->_c1Start, this->_c1End, 1);
+      _setCyclotronLightState(this->_c2Start, this->_c2End, 2);
+      _setCyclotronLightState(this->_c3Start, this->_c3End, 1);
+      _setCyclotronLightState(this->_c4Start, this->_c4End, 2);
 
-      reverseBootCyclotron = true;
+      this->_reverseBootCyclotron = true;
     } else {
-      _setCyclotronLightState(c1Start, c1End, 2);
-      _setCyclotronLightState(c2Start, c2End, 1);
-      _setCyclotronLightState(c3Start, c3End, 2);
-      _setCyclotronLightState(c4Start, c4End, 1);
+      _setCyclotronLightState(this->_c1Start, this->_c1End, 2);
+      _setCyclotronLightState(this->_c2Start, this->_c2End, 1);
+      _setCyclotronLightState(this->_c3Start, this->_c3End, 2);
+      _setCyclotronLightState(this->_c4Start, this->_c4End, 1);
 
-      reverseBootCyclotron = false;
+      this->_reverseBootCyclotron = false;
     }
 
     this->_lights->show();
   }
 }
 
-int cycOrder = 0;                   // which cyclotron led will be lit next
 unsigned long cyc_interval = 1000;  // interval at which to cycle lights for the cyclotron.
-unsigned long prevCycMillis = 0;    // last time we changed a cyclotron light in the idle sequence
 
 void Cyclotron::idle(unsigned long currentMillis, unsigned long cycspeed) {
-  if ((unsigned long)(currentMillis - prevCycMillis) >= cycspeed) {
-    prevCycMillis = currentMillis;
+  if ((unsigned long)(currentMillis - this->_prevCycMillis) >= cycspeed) {
+    this->_prevCycMillis = currentMillis;
 
-    switch (cycOrder) {
+    switch (this->_cycOrder) {
       case 0:
-        _setCyclotronLightState(c4Start, c4End, 2);
-        _setCyclotronLightState(c1Start, c1End, 0);
-        _setCyclotronLightState(c2Start, c2End, 2);
-        _setCyclotronLightState(c3Start, c3End, 2);
-        cycOrder = 1;
+        _setCyclotronLightState(this->_c4Start, this->_c4End, 2);
+        _setCyclotronLightState(this->_c1Start, this->_c1End, 0);
+        _setCyclotronLightState(this->_c2Start, this->_c2End, 2);
+        _setCyclotronLightState(this->_c3Start, this->_c3End, 2);
+        this->_cycOrder = 1;
         break;
       case 1:
-        _setCyclotronLightState(c1Start, c1End, 2);
-        _setCyclotronLightState(c2Start, c2End, 0);
-        _setCyclotronLightState(c3Start, c3End, 2);
-        _setCyclotronLightState(c4Start, c4End, 2);
-        cycOrder = 2;
+        _setCyclotronLightState(this->_c1Start, this->_c1End, 2);
+        _setCyclotronLightState(this->_c2Start, this->_c2End, 0);
+        _setCyclotronLightState(this->_c3Start, this->_c3End, 2);
+        _setCyclotronLightState(this->_c4Start, this->_c4End, 2);
+        this->_cycOrder = 2;
         break;
       case 2:
-        _setCyclotronLightState(c1Start, c1End, 2);
-        _setCyclotronLightState(c2Start, c2End, 2);
-        _setCyclotronLightState(c3Start, c3End, 0);
-        _setCyclotronLightState(c4Start, c4End, 2);
-        cycOrder = 3;
+        _setCyclotronLightState(this->_c1Start, this->_c1End, 2);
+        _setCyclotronLightState(this->_c2Start, this->_c2End, 2);
+        _setCyclotronLightState(this->_c3Start, this->_c3End, 0);
+        _setCyclotronLightState(this->_c4Start, this->_c4End, 2);
+        this->_cycOrder = 3;
         break;
       case 3:
-        _setCyclotronLightState(c1Start, c1End, 2);
-        _setCyclotronLightState(c2Start, c2End, 2);
-        _setCyclotronLightState(c3Start, c3End, 2);
-        _setCyclotronLightState(c4Start, c4End, 0);
-        cycOrder = 0;
+        _setCyclotronLightState(this->_c1Start, this->_c1End, 2);
+        _setCyclotronLightState(this->_c2Start, this->_c2End, 2);
+        _setCyclotronLightState(this->_c3Start, this->_c3End, 2);
+        _setCyclotronLightState(this->_c4Start, this->_c4End, 0);
+        this->_cycOrder = 0;
         break;
     }
 
@@ -111,18 +97,16 @@ void Cyclotron::idle(unsigned long currentMillis, unsigned long cycspeed) {
   }
 }
 
-unsigned long prevShtdMillis = 0;                 // last time we changed a light in the idle sequence
 const unsigned long pwr_shutdown_interval = 50;  // interval at which to cycle lights (milliseconds).
-int cyclotronFadeOut = 175;
 
 void Cyclotron::off(unsigned long currentMillis) {
-  if ((unsigned long)(currentMillis - prevShtdMillis) >= pwr_shutdown_interval) {
-    prevShtdMillis = currentMillis;
+  if ((unsigned long)(currentMillis - this->_prevShtdMillis) >= pwr_shutdown_interval) {
+    this->_prevShtdMillis = currentMillis;
 
-    for (int i = c1Start; i <= c4End; i++) {
-      if (cyclotronFadeOut >= 0) {
-        this->_lights->setPixelColor(i, 255 * cyclotronFadeOut / 255, 0, 0);
-        cyclotronFadeOut--;
+    for (int i = this->_c1Start; i <= this->_c4End; i++) {
+      if (this->_cyclotronFadeOut >= 0) {
+        this->_lights->setPixelColor(i, 255 * this->_cyclotronFadeOut / 255, 0, 0);
+        this->_cyclotronFadeOut--;
       } else {
         this->_lights->setPixelColor(i, 0);
       }
@@ -144,8 +128,8 @@ void Cyclotron::clear() {
   this->_lights->clear();
   this->_lights->show();
   this->_lights->setBrightness(100);
-  prevShtdMillis = 0;
-  cyclotronFadeOut = 175;
+  this->_prevShtdMillis = 0;
+  this->_cyclotronFadeOut = 175;
 }
 
 void Cyclotron::_setCyclotronLightState(int startLed, int endLed, int state) {
