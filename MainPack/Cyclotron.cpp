@@ -36,7 +36,7 @@ void Cyclotron::setup() {
   this->_lights = new Adafruit_NeoPixel(this->_numberOfLeds, this->_pin, NEO_GRB + NEO_KHZ800);
 
   this->_lights->begin();
-  this->_lights->setBrightness(75);
+  this->_lights->setBrightness(100);
   this->_lights->show();  // Initialize all pixels to 'off'
 }
 
@@ -143,7 +143,7 @@ void Cyclotron::vent(unsigned long currentMillis) {
 void Cyclotron::clear() {
   this->_lights->clear();
   this->_lights->show();
-  this->_lights->setBrightness(75);
+  this->_lights->setBrightness(100);
   prevShtdMillis = 0;
   cyclotronFadeOut = 175;
 }
@@ -152,12 +152,12 @@ void Cyclotron::_setCyclotronLightState(int startLed, int endLed, int state) {
   switch (state) {
     case 0:  // set all leds to red
       for (int i = startLed; i <= endLed; i++) {
-        this->_lights->setPixelColor(i, this->_lights->Color(255, 0, 0));
+        this->_lights->setPixelColor(i, this->_lights->Color(255, 255, 255));
       }
       break;
     case 1:  // set all leds to orange
       for (int i = startLed; i <= endLed; i++) {
-        this->_lights->setPixelColor(i, this->_lights->Color(255, 106, 0));
+        this->_lights->setPixelColor(i, this->_lights->Color(255, 165, 0));
       }
       break;
     case 2:  // set all leds off
