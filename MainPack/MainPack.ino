@@ -11,10 +11,10 @@
 
 const int NEOPIXEL_POWER_CELL_PIN = 7;
 const int NEOPIXEL_POWER_CELL_COUNT = 15;
-PowerCell powerCell = PowerCell::PowerCell(NEOPIXEL_POWER_CELL_COUNT, NEOPIXEL_POWER_CELL_PIN);
+PowerCell powerCell(NEOPIXEL_POWER_CELL_COUNT, NEOPIXEL_POWER_CELL_PIN);
 
 const int NEOPIXEL_CYCLOTRON_PIN = 6;
-Cyclotron cyclotronAndVent = Cyclotron::Cyclotron(NEOPIXEL_CYCLOTRON_PIN, 0, 7, 99, 8);
+Cyclotron cyclotronAndVent(NEOPIXEL_CYCLOTRON_PIN, 0, 7, 99, 8);
 
 // Smoke pins
 const int SMOKE = 4;
