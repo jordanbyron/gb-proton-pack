@@ -65,6 +65,8 @@ const char MESSAGE_PLAY_NEXT = 'm';
 
 const char MESSAGE_PING = 'p';
 
+const char MESSAGE_VOLUME = 'v';  // followed by one byte with the volume
+
 FireTimer pingTimer;
 unsigned long pingIntervalMillis = 500;
 
@@ -332,6 +334,7 @@ void frontKnobPressed(BfButton* btn, BfButton::press_pattern_t pattern) {
 }
 
 void volumeChanged(int volume) {
+  Serial.write(MESSAGE_VOLUME);
   Serial.write(volume);
   barGraph.volumeChanged(volume);
 }
