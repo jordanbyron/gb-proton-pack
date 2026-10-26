@@ -33,6 +33,7 @@ const int SFX_RX = 8;
 const int SFX_TX = 9;
 const int ACT = 10;  // this allows us to know if the audio is playing
 const int INITIAL_VOLUME = 15;
+const unsigned long SFX_VOLUME_TIMEOUT_MILLIS = 5000;
 
 SoftwareSerial sfxSerial = SoftwareSerial(SFX_RX, SFX_TX);
 DFPlayerMini_Fast sfx;
@@ -160,7 +161,7 @@ void setup() {
 
   delay(500);
 
-  volumeChanged(INITIAL_VOLUME);
+  setInitialVolume();
 
   debugButton.onPress(debugButtonPressed).onDoublePress(debugButtonPressed).onPressFor(debugButtonPressed, 2000);
 
@@ -504,6 +505,20 @@ bool audioPlaying() {
   if (currentMillis < (previousPlayMillis + IS_PLAYING_LAG_MILLIS)) return true;
 
   return false;
+}
+
+// The DFPlayer powers up at full volume and ignores commands until it has
+// finished reading the SD card, so keep setting the volume until it reads back.
+void setInitialVolume() {
+  unsigned long startMillis = millis();
+
+  do {
+    volumeChanged(INITIAL_VOLUME);
+    if (sfx.currentVolume() == INITIAL_VOLUME) return;
+    delay(100);
+  } while (millis() - startMillis < SFX_VOLUME_TIMEOUT_MILLIS);
+
+  Serial.println("SFX volume not confirmed");
 }
 
 void volumeChanged(int volume) {
