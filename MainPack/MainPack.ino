@@ -83,6 +83,7 @@ const char MESSAGE_PLAY_PAUSE = 'M';
 const char MESSAGE_PLAY_NEXT = 'm';
 
 const char MESSAGE_PING = 'p';
+const char MESSAGE_VOLUME = 'v';  // followed by one byte with the volume
 const char MESSAGE_NONE = 0;
 
 // ======= Wand Connectivity =======
@@ -193,17 +194,27 @@ void fetchMessageFromWand() {
       return;
     }
 
-    Serial.print("Message from wand ");
+    if (Serial.peek() == MESSAGE_VOLUME) {
+      if (Serial.available() < 2) return;  // wait for the volume byte
 
-    if (isAlpha(Serial.peek())) {
-      lastMessage = Serial.read();
-      Serial.println(lastMessage);
-    } else {
+      Serial.read();
       int volume = Serial.read();
+      Serial.print("Message from wand ");
       Serial.print("- Volume ");
       Serial.println(volume);
       volumeChanged(volume);
+      return;
     }
+
+    // Anything else that isn't a letter is line noise, not a message
+    if (!isAlpha(Serial.peek())) {
+      Serial.read();
+      return;
+    }
+
+    Serial.print("Message from wand ");
+    lastMessage = Serial.read();
+    Serial.println(lastMessage);
   }
 }
 
@@ -320,6 +331,7 @@ void overloading() {
   if (machine.executeOnce) {
     playSfx(16);  // Warning
     setSmoke(true);
+    setFan(true);
   }
 
   if (!audioPlaying()) playSfx(16);  // Warning
