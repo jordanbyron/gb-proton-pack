@@ -319,6 +319,7 @@ void overloading() {
   if (machine.executeOnce) {
     playSfx(16);  // Warning
     setSmoke(true);
+    setFan(true);
   }
 
   if (!audioPlaying()) playSfx(16);  // Warning
