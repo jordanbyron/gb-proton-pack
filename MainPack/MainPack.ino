@@ -11,10 +11,10 @@
 
 const int NEOPIXEL_POWER_CELL_PIN = 7;
 const int NEOPIXEL_POWER_CELL_COUNT = 15;
-PowerCell powerCell = PowerCell::PowerCell(NEOPIXEL_POWER_CELL_COUNT, NEOPIXEL_POWER_CELL_PIN);
+PowerCell powerCell(NEOPIXEL_POWER_CELL_COUNT, NEOPIXEL_POWER_CELL_PIN);
 
 const int NEOPIXEL_CYCLOTRON_PIN = 6;
-Cyclotron cyclotronAndVent = Cyclotron::Cyclotron(NEOPIXEL_CYCLOTRON_PIN, 0, 7, 99, 8);
+Cyclotron cyclotronAndVent(NEOPIXEL_CYCLOTRON_PIN, 0, 7, 99, 8);
 
 // Smoke pins
 const int SMOKE = 4;
@@ -33,6 +33,7 @@ const int SFX_RX = 8;
 const int SFX_TX = 9;
 const int ACT = 10;  // this allows us to know if the audio is playing
 const int INITIAL_VOLUME = 15;
+const unsigned long SFX_VOLUME_TIMEOUT_MILLIS = 5000;
 
 SoftwareSerial sfxSerial = SoftwareSerial(SFX_RX, SFX_TX);
 DFPlayerMini_Fast sfx;
@@ -82,6 +83,8 @@ const char MESSAGE_PLAY_PAUSE = 'M';
 const char MESSAGE_PLAY_NEXT = 'm';
 
 const char MESSAGE_PING = 'p';
+const char MESSAGE_VOLUME = 'v';  // followed by one byte with the volume
+const char MESSAGE_NONE = 0;
 
 // ======= Wand Connectivity =======
 
@@ -159,7 +162,7 @@ void setup() {
 
   delay(500);
 
-  volumeChanged(INITIAL_VOLUME);
+  setInitialVolume();
 
   debugButton.onPress(debugButtonPressed).onDoublePress(debugButtonPressed).onPressFor(debugButtonPressed, 2000);
 
@@ -179,7 +182,7 @@ void loop() {
 
   updateSmoke();
 
-  //lastMessage = ""; // Clear last message
+  //lastMessage = MESSAGE_NONE; // Clear last message
 
   delay(STATE_DELAY);
 }
@@ -191,17 +194,27 @@ void fetchMessageFromWand() {
       return;
     }
 
-    Serial.print("Message from wand ");
+    if (Serial.peek() == MESSAGE_VOLUME) {
+      if (Serial.available() < 2) return;  // wait for the volume byte
 
-    if (isAlpha(Serial.peek())) {
-      lastMessage = Serial.read();
-      Serial.println(lastMessage);
-    } else {
+      Serial.read();
       int volume = Serial.read();
+      Serial.print("Message from wand ");
       Serial.print("- Volume ");
       Serial.println(volume);
       volumeChanged(volume);
+      return;
     }
+
+    // Anything else that isn't a letter is line noise, not a message
+    if (!isAlpha(Serial.peek())) {
+      Serial.read();
+      return;
+    }
+
+    Serial.print("Message from wand ");
+    lastMessage = Serial.read();
+    Serial.println(lastMessage);
   }
 }
 
@@ -244,7 +257,7 @@ void debugButtonPressed(BfButton* btn, BfButton::press_pattern_t pattern) {
 }
 
 void exitDebugMode() {
-  lastMessage = "";
+  lastMessage = MESSAGE_NONE;
   machine.transitionTo(OFF);
   debugIndex = 0;
 }
@@ -318,6 +331,7 @@ void overloading() {
   if (machine.executeOnce) {
     playSfx(16);  // Warning
     setSmoke(true);
+    setFan(true);
   }
 
   if (!audioPlaying()) playSfx(16);  // Warning
@@ -431,7 +445,7 @@ bool offAfterPowerDown() {
 
 void sfxMode() {
   if (audioMachine.executeOnce) {
-    lastMessage = "";
+    lastMessage = MESSAGE_NONE;
     musicPlaying = false;
     if (audioPlaying()) sfx.stop();
   }
@@ -439,7 +453,7 @@ void sfxMode() {
 
 void musicMode() {
   if (audioMachine.executeOnce) {
-    lastMessage = "";
+    lastMessage = MESSAGE_NONE;
     musicPlaying = true;
     sfx.repeatFolder(1);
   }
@@ -459,7 +473,7 @@ bool nextSong() {
   bool transition = musicPlaying && lastMessage == MESSAGE_PLAY_NEXT;
 
   if (transition) {
-    lastMessage = "";
+    lastMessage = MESSAGE_NONE;
     sfx.playNext();
   }
   return transition;
@@ -503,6 +517,20 @@ bool audioPlaying() {
   if (currentMillis < (previousPlayMillis + IS_PLAYING_LAG_MILLIS)) return true;
 
   return false;
+}
+
+// The DFPlayer powers up at full volume and ignores commands until it has
+// finished reading the SD card, so keep setting the volume until it reads back.
+void setInitialVolume() {
+  unsigned long startMillis = millis();
+
+  do {
+    volumeChanged(INITIAL_VOLUME);
+    if (sfx.currentVolume() == INITIAL_VOLUME) return;
+    delay(100);
+  } while (millis() - startMillis < SFX_VOLUME_TIMEOUT_MILLIS);
+
+  Serial.println("SFX volume not confirmed");
 }
 
 void volumeChanged(int volume) {
