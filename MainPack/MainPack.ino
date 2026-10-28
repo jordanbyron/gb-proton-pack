@@ -32,7 +32,7 @@ bool smokeRunning = false;   // pen motor currently on (vs. cooling down)
 const int SFX_RX = 8;
 const int SFX_TX = 9;
 const int ACT = 10;  // this allows us to know if the audio is playing
-const int INITIAL_VOLUME = 15;
+const int INITIAL_VOLUME = 25;
 const unsigned long SFX_VOLUME_TIMEOUT_MILLIS = 5000;
 
 SoftwareSerial sfxSerial = SoftwareSerial(SFX_RX, SFX_TX);

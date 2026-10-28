@@ -45,7 +45,7 @@ const int FRONT_KNOB_DT = 9;
 const int FRONT_KNOB_CLK = 10;
 BfButton frontKnobButton(BfButton::STANDALONE_DIGITAL, FRONT_KNOB_BTN);
 
-const int INITIAL_VOLUME = 15;
+const int INITIAL_VOLUME = 25;
 VolumeControl volumeControl(FRONT_KNOB_DT, FRONT_KNOB_CLK, INITIAL_VOLUME, BARGRAPH_SIZE);
 
 const int STATE_DELAY = 10;
