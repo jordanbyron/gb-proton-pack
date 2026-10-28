@@ -14,7 +14,9 @@ const int NEOPIXEL_POWER_CELL_COUNT = 15;
 PowerCell powerCell(NEOPIXEL_POWER_CELL_COUNT, NEOPIXEL_POWER_CELL_PIN);
 
 const int NEOPIXEL_CYCLOTRON_PIN = 6;
-Cyclotron cyclotronAndVent(NEOPIXEL_CYCLOTRON_PIN, 0, 7, 99, 8);
+// Four 7-pixel jewels. The vent LEDs are relay driven now, so the strip
+// ends at the jewels and the vent segment is empty.
+Cyclotron cyclotronAndVent(NEOPIXEL_CYCLOTRON_PIN, 0, 7, 28, 0);
 
 // Smoke pins
 const int SMOKE = 4;
@@ -149,14 +151,14 @@ void setup() {
   cyclotronAndVent.setup();
 
   if (!sfx.begin(sfxSerial, true)) {
-    Serial.println("Not found");
+    Serial.println(F("Not found"));
     while (1)
       ;
   }
 
   delay(1000);
 
-  Serial.println("SFX board found");
+  Serial.println(F("SFX board found"));
   sfx.wakeUp();
   sfx.startDAC();
 
@@ -199,8 +201,8 @@ void fetchMessageFromWand() {
 
       Serial.read();
       int volume = Serial.read();
-      Serial.print("Message from wand ");
-      Serial.print("- Volume ");
+      Serial.print(F("Message from wand "));
+      Serial.print(F("- Volume "));
       Serial.println(volume);
       volumeChanged(volume);
       return;
@@ -212,7 +214,7 @@ void fetchMessageFromWand() {
       return;
     }
 
-    Serial.print("Message from wand ");
+    Serial.print(F("Message from wand "));
     lastMessage = Serial.read();
     Serial.println(lastMessage);
   }
@@ -231,7 +233,7 @@ void checkWandConnectivity() {
   }
 
   if (wandConnected != previousState) {
-    Serial.print("Wand ");
+    Serial.print(F("Wand "));
     Serial.println(wandConnected ? "Connected" : "Disconnected");
   }
 }
@@ -269,7 +271,7 @@ void off() {
     powerCell.clear();
     cyclotronAndVent.clear();
     stopSfx();
-    Serial.println("Off");
+    Serial.println(F("Off"));
     setSmoke(false);
     setFan(false);
   }
@@ -278,7 +280,7 @@ void off() {
 void booting() {
   if (machine.executeOnce) {
     playSfx(1);
-    Serial.println("Booting");
+    Serial.println(F("Booting"));
   }
 
   powerCell.boot(currentMillis);
@@ -290,7 +292,7 @@ void locked() {
   cyclotronAndVent.idle(currentMillis, 1000);
 
   if (machine.executeOnce) {
-    Serial.println("Cycling (locked)");
+    Serial.println(F("Cycling (locked)"));
   }
 
   //if(!audioPlaying()) playSfx(2); // Idle
@@ -302,7 +304,7 @@ void activated() {
   cyclotronAndVent.idle(currentMillis, 1000);
 
   if (machine.executeOnce) {
-    Serial.println("Cycling (activated)");
+    Serial.println(F("Cycling (activated)"));
     setSmoke(false);
     setFan(false);
   }
@@ -356,7 +358,7 @@ void venting() {
 
 void poweringDown() {
   if (machine.executeOnce) {
-    Serial.println("Powering Down");
+    Serial.println(F("Powering Down"));
     playSfx(10);
     setSmoke(false);
     setFan(false);
@@ -530,7 +532,7 @@ void setInitialVolume() {
     delay(100);
   } while (millis() - startMillis < SFX_VOLUME_TIMEOUT_MILLIS);
 
-  Serial.println("SFX volume not confirmed");
+  Serial.println(F("SFX volume not confirmed"));
 }
 
 void volumeChanged(int volume) {
